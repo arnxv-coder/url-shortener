@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, render_template
 import sqlite3
 import string
 import random
+import os
 
 app = Flask(__name__)
 
@@ -12,6 +13,12 @@ def get_db_connection():
 
 def generate_code(length=6):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def init_db():
+    conn = sqlite3.connect('shortener.db')
+    conn.execute('CREATE TABLE IF NOT EXISTS urls (id INTEGER PRIMARY KEY, code TEXT, original_url TEXT)')
+    conn.commit()
+    conn.close()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -33,16 +40,8 @@ def redirect_to_url(code):
     if result:
         return redirect(result['original_url'])
     return "URL not found", 404
-    
-def init_db():
-    conn = sqlite3.connect('shortener.db')
-    conn.execute('CREATE TABLE IF NOT EXISTS urls (id INTEGER PRIMARY KEY, code TEXT, original_url TEXT)')
-    conn.commit()
-    conn.close()
-
-
-import os
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # get PORT from Render, default to 5000
+    init_db()  # Create DB table every time on start
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
