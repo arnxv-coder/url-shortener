@@ -33,6 +33,13 @@ def redirect_to_url(code):
     if result:
         return redirect(result['original_url'])
     return "URL not found", 404
+    
+def init_db():
+    conn = sqlite3.connect('shortener.db')
+    conn.execute('CREATE TABLE IF NOT EXISTS urls (id INTEGER PRIMARY KEY, code TEXT, original_url TEXT)')
+    conn.commit()
+    conn.close()
+
 
 import os
 
